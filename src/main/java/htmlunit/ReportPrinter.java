@@ -1,4 +1,4 @@
-package aribaextractor;
+package htmlunit;
 
 import com.gargoylesoftware.htmlunit.WebResponse;
 import org.apache.commons.csv.CSVFormat;

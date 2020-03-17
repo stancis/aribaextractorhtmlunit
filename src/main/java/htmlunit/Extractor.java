@@ -1,4 +1,4 @@
-package aribaextractor;
+package htmlunit;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
@@ -27,7 +27,7 @@ public class Extractor {
     HtmlElement passwordInput = (HtmlElement) page.getElementById("Password");
     passwordInput.type(password);
     page = page.<HtmlElement>querySelector("td.w-login-form-input-btn-space > .w-login-form-btn").click();
-    System.out.println("Login");
+    System.out.println("Target System Connected");
   }
 
   public void goToExportTab(String reportLocation) throws IOException {
@@ -50,7 +50,7 @@ public class Extractor {
     waitXpath(exportTabXpath);
     webClient.waitForBackgroundJavaScriptStartingBefore(5000);//JavaScript is taking longer here, adding max delay
     page = page.<HtmlElement>getFirstByXPath(exportTabXpath).click();
-    System.out.println("Navigated to export tab");
+    System.out.println("Identifying Export");
   }
 
   public WebResponse exportReport(String reportName) throws IOException {
@@ -65,11 +65,11 @@ public class Extractor {
     page = page.<HtmlElement>getFirstByXPath(okXpath).click();
 
     waitUntil(() -> page.getElementById("AWDownload") != null);
-    System.out.println("Download started");
+    System.out.println("Download Initiated...");
     URL downloadUrl = page.getFullyQualifiedUrl(page.getElementById("AWDownload").getAttribute("src"));
     WebResponse response = webClient.getPage(downloadUrl).getWebResponse();
     page = webClient.getPage(url);
-    System.out.println("Download finished");
+    System.out.println("Download Completed");
     return response;
   }
 
@@ -77,7 +77,7 @@ public class Extractor {
     waitCss("a.awmenuLink[_mid=Preferences]");
     page = page.<HtmlElement>querySelector("a.awmenuLink[_mid=Preferences]").click();
     page = ((HtmlElement) page.querySelectorAll("#Preferences a").get(0)).click();
-    System.out.println("Logged out");
+    System.out.println("Target System Disconnected");
   }
 
   private void refresh() {

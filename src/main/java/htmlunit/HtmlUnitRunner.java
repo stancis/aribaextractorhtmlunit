@@ -1,4 +1,4 @@
-package aribaextractor;
+package htmlunit;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
