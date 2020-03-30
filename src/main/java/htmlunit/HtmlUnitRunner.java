@@ -11,12 +11,17 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class HtmlUnitRunner {
+  /**
+   * * If no arguments passed - plaintext config is expected
+   * * If passed keystore location - AES key is read from provided keystore and used to decrypt config. Keystore must not
+   * be password protected
+   * * If passed keystore location and keystore password - AES key is read from provided keystore and used to decrypt config.
+   * Keystore must be password protected
+   *
+   * @param args keystore location and keystore password. Both optional
+   * @throws IOException
+   */
   public static void main(String[] args) throws IOException {
-    if (args.length < 1) {
-      System.out.println("Please provide keystore location and keystore password if keystore is password-protected");
-      System.out.println("For example: java -jar file.jar keystore.p12 pass");
-    }
-
     long l = System.currentTimeMillis();
     //Disable logging
     java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
@@ -31,9 +36,9 @@ public class HtmlUnitRunner {
       //Read properties
       Map<String, String> properties;
       try {
-        properties = ConfigReader.getProperties("config.properties", args[0], args.length > 1 ? args[1] : null);
-      } catch (GeneralSecurityException e) {
-        System.out.println("Failed to read properties file. " + e.getMessage());
+        properties = ConfigReader.getProperties("config.properties", args.length > 0 ? args[0] : null, args.length > 1 ? args[1] : null);
+      } catch (GeneralSecurityException | IOException e) {
+        System.out.println("Failed to read to config. " + e.getMessage());
         return;
       }
 
