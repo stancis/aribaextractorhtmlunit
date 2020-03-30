@@ -5,13 +5,18 @@ import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Properties;
+import java.security.GeneralSecurityException;
+import java.util.Map;
 import java.util.logging.Level;
 
 public class HtmlUnitRunner {
   public static void main(String[] args) throws IOException {
+    if (args.length < 1) {
+      System.out.println("Please provide keystore location and keystore password if keystore is password-protected");
+      System.out.println("For example: java -jar file.jar keystore.p12 pass");
+    }
+
     long l = System.currentTimeMillis();
     //Disable logging
     java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
@@ -24,13 +29,19 @@ public class HtmlUnitRunner {
       webClient.setAjaxController(new NicelyResynchronizingAjaxController());
 
       //Read properties
-      Properties properties = getProperties();
+      Map<String, String> properties;
+      try {
+        properties = ConfigReader.getProperties("config.properties", args[0], args.length > 1 ? args[1] : null);
+      } catch (GeneralSecurityException e) {
+        System.out.println("Failed to read properties file. " + e.getMessage());
+        return;
+      }
 
       //Run extractor
-      Extractor extractor = new Extractor(webClient, properties.getProperty("url"));
-      extractor.login(properties.getProperty("user"), properties.getProperty("password"));
-      extractor.goToExportTab(properties.getProperty("reportLocation"));
-      WebResponse response = extractor.exportReport(properties.getProperty("reportName").trim());
+      Extractor extractor = new Extractor(webClient, properties.get("url"));
+      extractor.login(properties.get("user"), properties.get("password"));
+      extractor.goToExportTab(properties.get("administrationType"), properties.get("reportLocation"));
+      WebResponse response = extractor.exportReport(properties.get("reportName").trim());
       extractor.logout();
 
       //Print retrieved reports
@@ -40,11 +51,5 @@ public class HtmlUnitRunner {
       webClient.close();
     }
     System.out.println("Execution took: " + (System.currentTimeMillis() - l) / 1000f + " seconds");
-  }
-
-  private static Properties getProperties() throws IOException {
-    Properties properties = new Properties();
-    properties.load(new FileReader("config.properties"));
-    return properties;
   }
 }

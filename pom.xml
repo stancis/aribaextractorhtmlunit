@@ -42,7 +42,7 @@
               <archive>
                 <manifest>
                   <mainClass>
-                    aribaextractor.HtmlUnitRunner
+                    htmlunit.HtmlUnitRunner
                   </mainClass>
                 </manifest>
               </archive>

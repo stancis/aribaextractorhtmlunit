@@ -30,11 +30,11 @@ public class Extractor {
     System.out.println("Target System Connected");
   }
 
-  public void goToExportTab(String reportLocation) throws IOException {
+  public void goToExportTab(String administrationType, String reportLocation) throws IOException {
     String manageSelector = "td.a-nav-bar-manage > a";
     waitCss(manageSelector);
     page = page.<HtmlElement>querySelector(manageSelector).click();
-    page = page.<HtmlElement>querySelector("#Manage a[title=Administration]").click();
+    page = page.<HtmlElement>querySelector("#Manage a[title='" + administrationType + "']").click();
 
     String reportLocationXpath = "//a[@title='" + reportLocation + "']";
     waitXpath(reportLocationXpath);
