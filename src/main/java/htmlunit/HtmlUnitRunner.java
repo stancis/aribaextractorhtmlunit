@@ -38,8 +38,8 @@ public class HtmlUnitRunner {
       }
 
       //Run extractor
-      Extractor extractor = new Extractor(webClient, properties.get("url"));
-      extractor.login(properties.get("user"), properties.get("password"));
+      Extractor extractor = new Extractor(webClient, properties.get("endpoint"));
+      extractor.login(properties.get("client"), properties.get("sharedSecret"));
       extractor.goToExportTab(properties.get("administrationType"), properties.get("reportLocation"));
       WebResponse response = extractor.exportReport(properties.get("reportName").trim());
       extractor.logout();

@@ -16,16 +16,16 @@ public class Extractor {
   private WebClient webClient;
   private HtmlPage page;
 
-  public Extractor(WebClient webClient, String url) throws IOException {
+  public Extractor(WebClient webClient, String endpoint) throws IOException {
     this.webClient = webClient;
-    this.page = webClient.getPage(url);
+    this.page = webClient.getPage(endpoint);
   }
 
-  public void login(String user, String password) throws IOException {
+  public void login(String client, String sharedSecret) throws IOException {
     HtmlElement usernameInput = (HtmlElement) page.getElementById("UserName");
-    usernameInput.type(user);
+    usernameInput.type(client);
     HtmlElement passwordInput = (HtmlElement) page.getElementById("Password");
-    passwordInput.type(password);
+    passwordInput.type(sharedSecret);
     page = page.<HtmlElement>querySelector("td.w-login-form-input-btn-space > .w-login-form-btn").click();
     System.out.println("Target System Connected");
   }
