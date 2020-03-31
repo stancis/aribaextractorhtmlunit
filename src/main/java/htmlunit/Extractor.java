@@ -16,41 +16,67 @@ public class Extractor {
   private WebClient webClient;
   private HtmlPage page;
 
-  public Extractor(WebClient webClient, String endpoint) throws IOException {
+  public Extractor(WebClient webClient, String endpoint) {
     this.webClient = webClient;
-    this.page = webClient.getPage(endpoint);
+    try {
+      this.page = webClient.getPage(endpoint);
+    } catch (IOException e) {
+      throw new ExtractorException("Target site not accessible. Please verify target website status or your internet connection.", e);
+    }
   }
 
   public void login(String client, String sharedSecret) throws IOException {
+    HtmlElement passwordInput = (HtmlElement) page.getElementById("Password");
+    if (passwordInput == null) {
+      throw new ExtractorException("Target site under maintenance. Please verify target website status.");
+    }
+
     HtmlElement usernameInput = (HtmlElement) page.getElementById("UserName");
     usernameInput.type(client);
-    HtmlElement passwordInput = (HtmlElement) page.getElementById("Password");
     passwordInput.type(sharedSecret);
     page = page.<HtmlElement>querySelector("td.w-login-form-input-btn-space > .w-login-form-btn").click();
+
+    if (page.getElementById("Password") != null) {
+      throw new ExtractorException("Client and/or sharedsecret credential error. Please verify the combination of your credentials with Ariba Administrator");
+    }
+
     System.out.println("Target System Connected");
   }
 
   public void goToExportTab(String administrationType, String reportLocation) throws IOException {
     String manageSelector = "td.a-nav-bar-manage > a";
     waitCss(manageSelector);
-    page = page.<HtmlElement>querySelector(manageSelector).click();
-    page = page.<HtmlElement>querySelector("#Manage a[title='" + administrationType + "']").click();
-
-    String reportLocationXpath = "//a[@title='" + reportLocation + "']";
-    waitXpath(reportLocationXpath);
-    List<HtmlElement> firstMenu = page.getByXPath(reportLocationXpath + "/ancestor::tr[1]/following-sibling::tr[2]");
-    if (firstMenu.isEmpty() || !firstMenu.get(0).getAttribute("class").contains("tocItem")) {
-      page = page.<HtmlElement>getFirstByXPath(reportLocationXpath).click();
+    HtmlElement manageConsole = page.querySelector(manageSelector);
+    if (manageConsole == null) {
+      throw new ExtractorException("Cannot access \"manage\" console. Please contact your Ariba Administrator to check your credential privilege.");
     }
-    waitXpath(reportLocationXpath + "/ancestor::tr[1]/following-sibling::tr[2][contains(@class, 'tocItem')]");
-    page = page.<HtmlElement>getByXPath(reportLocationXpath + "/ancestor::tr[1]/following-sibling::tr[contains(@class, 'tocItem')]" +
-        "//a[contains(@title, 'Data Import/Export')]").get(0).click();
+    page = manageConsole.click();
 
-    String exportTabXpath = "//a[text()='Export']";
-    waitXpath(exportTabXpath);
-    webClient.waitForBackgroundJavaScriptStartingBefore(5000);//JavaScript is taking longer here, adding max delay
-    page = page.<HtmlElement>getFirstByXPath(exportTabXpath).click();
-    System.out.println("Identifying Export");
+    HtmlElement administrationConsole = page.querySelector("#Manage a[title='" + administrationType + "']");
+    if (administrationConsole == null) {
+      throw new ExtractorException("Cannot access \"" + administrationType + "\" console. Please contact your Ariba Administrator to check your credential privilege.");
+    }
+    page = administrationConsole.click();
+
+    try {
+      String reportLocationXpath = "//a[@title='" + reportLocation + "']";
+      waitXpath(reportLocationXpath);
+      List<HtmlElement> firstMenu = page.getByXPath(reportLocationXpath + "/ancestor::tr[1]/following-sibling::tr[2]");
+      if (firstMenu.isEmpty() || !firstMenu.get(0).getAttribute("class").contains("tocItem")) {
+        page = page.<HtmlElement>getFirstByXPath(reportLocationXpath).click();
+      }
+      waitXpath(reportLocationXpath + "/ancestor::tr[1]/following-sibling::tr[2][contains(@class, 'tocItem')]");
+      page = page.<HtmlElement>getByXPath(reportLocationXpath + "/ancestor::tr[1]/following-sibling::tr[contains(@class, 'tocItem')]" +
+          "//a[contains(@title, 'Data Import/Export')]").get(0).click();
+
+      String exportTabXpath = "//a[text()='Export']";
+      waitXpath(exportTabXpath);
+      webClient.waitForBackgroundJavaScriptStartingBefore(5000);//JavaScript is taking longer here, adding max delay
+      page = page.<HtmlElement>getFirstByXPath(exportTabXpath).click();
+      System.out.println("Identifying Export");
+    } catch (RuntimeException e) {
+      throw new ExtractorException("Cannot access specific report requested. Please contact your Ariba Administrator to verify UI change", e);
+    }
   }
 
   public WebResponse exportReport(String reportName) throws IOException {
@@ -59,18 +85,27 @@ public class Extractor {
         "ancestor::tr[contains(@class, 'tableRow1')]//button";
     waitXpath(exportButtonXpath);
 
-    page = page.<HtmlElement>getFirstByXPath(exportButtonXpath).click();
-    String okXpath = "//div[@class='w-dlg-buttons']/button/span[contains(text(), 'OK')]";
-    waitXpath(okXpath);
-    page = page.<HtmlElement>getFirstByXPath(okXpath).click();
+    HtmlElement exportButton = page.getFirstByXPath(exportButtonXpath);
+    if (exportButton == null) {
+      throw new ExtractorException("Cannot access specific report requested. Please contact your Ariba Administrator to check your credential reporting privilege.");
+    }
+    page = exportButton.click();
 
-    waitUntil(() -> page.getElementById("AWDownload") != null);
-    System.out.println("Download Initiated...");
-    URL downloadUrl = page.getFullyQualifiedUrl(page.getElementById("AWDownload").getAttribute("src"));
-    WebResponse response = webClient.getPage(downloadUrl).getWebResponse();
-    page = webClient.getPage(url);
-    System.out.println("Download Completed");
-    return response;
+    try {
+      String okXpath = "//div[@class='w-dlg-buttons']/button/span[contains(text(), 'OK')]";
+      waitXpath(okXpath);
+      page = page.<HtmlElement>getFirstByXPath(okXpath).click();
+
+      waitUntil(() -> page.getElementById("AWDownload") != null);
+      System.out.println("Download Initiated...");
+      URL downloadUrl = page.getFullyQualifiedUrl(page.getElementById("AWDownload").getAttribute("src"));
+      WebResponse response = webClient.getPage(downloadUrl).getWebResponse();
+      page = webClient.getPage(url);
+      System.out.println("Download Completed");
+      return response;
+    } catch (RuntimeException e) {
+      throw new ExtractorException("Access to specific report is granted. Report download failed. Please contact your site administrator", e);
+    }
   }
 
   public void logout() throws IOException {

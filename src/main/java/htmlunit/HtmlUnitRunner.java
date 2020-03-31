@@ -23,8 +23,7 @@ public class HtmlUnitRunner {
     String keystoreLocation = args.length > 0 ? args[0] : null;
     String keystorePass = args.length > 1 ? args[1] : null;
     if (keystoreLocation != null && keystorePass == null) {
-      System.out.println("Keystore password is missing");
-      return;
+      handleError("Keystore password is missing");
     }
 
     long l = System.currentTimeMillis();
@@ -57,9 +56,16 @@ public class HtmlUnitRunner {
       //Print retrieved reports
       ReportPrinter reportPrinter = new ReportPrinter(response);
       reportPrinter.print();
+    } catch (ExtractorException e) {
+      handleError(e.getMessage());
     } finally {
       webClient.close();
     }
     System.out.println("Execution took: " + (System.currentTimeMillis() - l) / 1000f + " seconds");
+  }
+
+  private static void handleError(String error) {
+    System.out.println(error);
+    System.exit(-1);
   }
 }
