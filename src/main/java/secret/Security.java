@@ -9,16 +9,17 @@ import java.security.GeneralSecurityException;
 public class Security {
   public static void main(String[] args)
       throws IOException, GeneralSecurityException {
-    if (args.length < 3) {
-      System.out.println("Please provide operation (enc/dec), value, keystore location and keystore password if keystore is password-protected");
-      System.out.println("For example: java -jar file.jar enc myValue keystore.p12 pass");
+    if (args.length < 4) {
+      System.out.println("Please provide operation ('enc' for encryption or 'dec' for decryption), value," +
+          " keystore location and keystore password");
+      System.out.println("For example: java -cp file.jar secret.Security enc 'test string' keystore.p12 pass");
       return;
     }
 
     String operation = args[0];
     String value = args[1];
     String keystoreLocation = args[2];
-    String keystorePass = args.length > 3 ? args[3] : null;
+    String keystorePass = args[3];
     Encryptor encryptor = new Encryptor(keystoreLocation, keystorePass);
     if ("dec".equalsIgnoreCase(operation)) {
       System.out.println(encryptor.decrypt(value));

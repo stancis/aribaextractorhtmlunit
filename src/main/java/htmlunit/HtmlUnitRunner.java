@@ -13,8 +13,6 @@ import java.util.logging.Level;
 public class HtmlUnitRunner {
   /**
    * * If no arguments passed - plaintext config is expected
-   * * If passed keystore location - AES key is read from provided keystore and used to decrypt config. Keystore must not
-   * be password protected
    * * If passed keystore location and keystore password - AES key is read from provided keystore and used to decrypt config.
    * Keystore must be password protected
    *
@@ -22,6 +20,13 @@ public class HtmlUnitRunner {
    * @throws IOException
    */
   public static void main(String[] args) throws IOException {
+    String keystoreLocation = args.length > 0 ? args[0] : null;
+    String keystorePass = args.length > 1 ? args[1] : null;
+    if (keystoreLocation != null && keystorePass == null) {
+      System.out.println("Keystore password is missing");
+      return;
+    }
+
     long l = System.currentTimeMillis();
     //Disable logging
     java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
@@ -36,7 +41,7 @@ public class HtmlUnitRunner {
       //Read properties
       Map<String, String> properties;
       try {
-        properties = ConfigReader.getProperties("config.properties", args.length > 0 ? args[0] : null, args.length > 1 ? args[1] : null);
+        properties = ConfigReader.getProperties("config.properties", keystoreLocation, keystorePass);
       } catch (GeneralSecurityException | IOException e) {
         System.out.println("Failed to read to config. " + e.getMessage());
         return;
