@@ -19,7 +19,7 @@ public class HtmlUnitRunner {
    * @param args keystore location and keystore password. Both optional
    * @throws IOException
    */
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) {
     String keystoreLocation = args.length > 0 ? args[0] : null;
     String keystorePass = args.length > 1 ? args[1] : null;
     if (keystoreLocation != null && keystorePass == null) {
@@ -58,6 +58,8 @@ public class HtmlUnitRunner {
       reportPrinter.print();
     } catch (ExtractorException e) {
       handleError(e.getMessage());
+    } catch (IOException e) {
+      handleError("Target site not accessible. Please verify target website status or your internet connection.");
     } finally {
       webClient.close();
     }

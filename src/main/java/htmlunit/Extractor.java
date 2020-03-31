@@ -16,13 +16,9 @@ public class Extractor {
   private WebClient webClient;
   private HtmlPage page;
 
-  public Extractor(WebClient webClient, String endpoint) {
+  public Extractor(WebClient webClient, String endpoint) throws IOException {
     this.webClient = webClient;
-    try {
-      this.page = webClient.getPage(endpoint);
-    } catch (IOException e) {
-      throw new ExtractorException("Target site not accessible. Please verify target website status or your internet connection.", e);
-    }
+    this.page = webClient.getPage(endpoint);
   }
 
   public void login(String client, String sharedSecret) throws IOException {
