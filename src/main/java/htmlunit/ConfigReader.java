@@ -32,17 +32,17 @@ public class ConfigReader {
     Encryptor encryptor = keystoreLocation == null ? null : new Encryptor(keystoreLocation, keystorePass);
 
     Map<String, Object> result = new HashMap<>();
-    String[] reportNames = new String[10];
-    String[] reportLocations = new String[10];
+    String[] reportNames = new String[5];
+    String[] reportLocations = new String[5];
     for (Map.Entry<Object, Object> entry : properties.entrySet()) {
       String key = (String) entry.getKey();
       String value = (String) entry.getValue();
       if (isReportProperty(key)) {
         String[] keyParts = key.split("\\.");
         if (key.startsWith(REPORT_NAME)) {
-          reportNames[Integer.parseInt(keyParts[1])] = value;
+          reportNames[Integer.parseInt(keyParts[1]) - 1] = value;
         } else {
-          reportLocations[Integer.parseInt(keyParts[1])] = value;
+          reportLocations[Integer.parseInt(keyParts[1]) - 1] = value;
         }
       } else {
         result.put(key, encryptor == null ? value : encryptor.decrypt(value));
