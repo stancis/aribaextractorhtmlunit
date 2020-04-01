@@ -16,8 +16,7 @@ public class HtmlUnitRunner {
    * * If passed keystore location and keystore password - AES key is read from provided keystore and used to decrypt config.
    * Keystore must be password protected
    *
-   * @param args keystore location and keystore password. Both optional
-   * @throws IOException
+   * @param args keystore location and keystore password
    */
   public static void main(String[] args) {
     String keystoreLocation = args.length > 0 ? args[0] : null;

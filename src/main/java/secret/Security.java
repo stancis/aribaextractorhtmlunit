@@ -12,7 +12,7 @@ public class Security {
     if (args.length < 4) {
       System.out.println("Please provide operation ('enc' for encryption or 'dec' for decryption), value," +
           " keystore location and keystore password");
-      System.out.println("For example: java -cp file.jar secret.Security enc 'test string' keystore.p12 pass");
+      System.out.println("For example: java -cp file.jar secret.Security enc 'test string' keystore.p12 Ariba@123456");
       return;
     }
 
