@@ -90,10 +90,27 @@ public class Extractor {
     String exportButtonXpath = "//td[contains(text(), '" + reportName + "')]/" +
         "ancestor::tr[contains(@class, 'tableRow1')]//button";
     //call report name from properties
-    waitXpath(exportButtonXpath);
-    
+
+    webClient.waitForBackgroundJavaScriptStartingBefore(5000);//Wait for reports to load for up to 5000 ms
     HtmlElement exportButton = page.getFirstByXPath(exportButtonXpath);
     //find export button for the corresponding report
+    if (exportButton == null) {
+      //Search for report if it is not found after page load
+      try {
+        String searchButtonSelector = "button[title=Search]";
+        waitCss(searchButtonSelector);//Wait for search button to appear
+        //Find search input
+        HtmlElement searchInput = page.querySelector('#' + page.<HtmlElement>getFirstByXPath("//label[contains(text(), 'Task Name')]").getAttribute("for"));
+        searchInput.setAttribute("value", reportName);
+        page = page.<HtmlElement>querySelector(searchButtonSelector).click();
+      } catch (RuntimeException e) {
+        throw new ExtractorException("Cannot access specific report requested. Please contact your Ariba Administrator to verify UI change", e);
+      }
+      waitUntil(() -> page.querySelectorAll("button[title='Export data']").size() == 1);//Wait search to finish
+      exportButton = page.getFirstByXPath(exportButtonXpath);
+      //find export button for the corresponding report
+    }
+
     if (exportButton == null) {
       throw new ExtractorException(reportName + ": Cannot access specific report requested. Please contact your Ariba Administrator to check your credential reporting privilege.");
     }//LOGIC: If export button does not exist it indicates the account missed priviledge
@@ -111,6 +128,7 @@ public class Extractor {
       URL downloadUrl = page.getFullyQualifiedUrl(page.getElementById("AWDownload").getAttribute("src"));
       WebResponse response = webClient.getPage(downloadUrl).getWebResponse();
       page = webClient.getPage(url);
+//      webClient.getCache().clear();
       System.out.println("Download Completed");
       return response;
     } catch (RuntimeException e) {
