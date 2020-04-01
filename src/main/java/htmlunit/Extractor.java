@@ -39,8 +39,8 @@ public class Extractor {
     System.out.println("Target System Connected");
   }
 
-  public void goToExportTab(String administrationType, String reportLocation) throws IOException {
-    String manageSelector = "td.a-nav-bar-manage > a"; 
+  public void goToAdministration(String administrationType) throws IOException {
+    String manageSelector = "td.a-nav-bar-manage > a";
     //Key element class attributes we do not rely on manage title alone
     waitCss(manageSelector);
     HtmlElement manageConsole = page.querySelector(manageSelector);
@@ -55,7 +55,9 @@ public class Extractor {
       throw new ExtractorException("Cannot access \"" + administrationType + "\" console. Please contact your Ariba Administrator to check your credential privilege.");
     }//Logic: Need to have the right Administration type otherwise not authorised, meaning that the priviledge is not assigned.
     page = administrationConsole.click();
+  }
 
+  public void goToExportTab(String reportLocation) throws IOException {
     try {
       String reportLocationXpath = "//a[@title='" + reportLocation + "']";
       //define the pattern to look on the page. Logic: must contain title with value as reportlocation from properties
@@ -93,7 +95,7 @@ public class Extractor {
     HtmlElement exportButton = page.getFirstByXPath(exportButtonXpath);
     //find export button for the corresponding report
     if (exportButton == null) {
-      throw new ExtractorException("Cannot access specific report requested. Please contact your Ariba Administrator to check your credential reporting privilege.");
+      throw new ExtractorException(reportName + ": Cannot access specific report requested. Please contact your Ariba Administrator to check your credential reporting privilege.");
     }//LOGIC: If export button does not exist it indicates the account missed priviledge
     page = exportButton.click();
 
@@ -112,7 +114,7 @@ public class Extractor {
       System.out.println("Download Completed");
       return response;
     } catch (RuntimeException e) {
-      throw new ExtractorException("Access to specific report is granted. Report download failed. Please contact your site administrator", e);
+      throw new ExtractorException(reportName + ": Access to specific report is granted. Report download failed. Please contact your site administrator", e);
     } //LOGIC: download runtime exception means report download failed
   }
 
