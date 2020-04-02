@@ -128,7 +128,6 @@ public class Extractor {
       URL downloadUrl = page.getFullyQualifiedUrl(page.getElementById("AWDownload").getAttribute("src"));
       WebResponse response = webClient.getPage(downloadUrl).getWebResponse();
       page = webClient.getPage(url);
-//      webClient.getCache().clear();
       System.out.println("Download Completed");
       return response;
     } catch (RuntimeException e) {
